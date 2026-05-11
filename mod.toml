@@ -1,2 +1,6 @@
 name = "Split-Screen Mod"
 description = "Adds support for 4-player split-screen to the game"
+
+[preload]
+packages = ["PDLCIN_B3_Anim2"]
+keep_alive = ["Skeletons.Mesh.Batman_Skeleton_Skin"]

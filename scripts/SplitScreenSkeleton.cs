@@ -12,9 +12,6 @@ public class SplitScreenSkeleton : Script
         {
             Owner.PostBeginPlay();
 
-            Game.LoadPackage("PDLCIN_B3_Anim2");
-            Game.LoadPackage("Under_C2");
-
             var depthBiasData = new SkeletalMeshComponent.FDepthBiasData
             {
                 DepthBias = -10,
