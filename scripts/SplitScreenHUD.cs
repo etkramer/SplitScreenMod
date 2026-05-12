@@ -132,7 +132,7 @@ public sealed class SplitScreenHUD : Script
         hud.SetViewportSplitscreenIndex(0);
 
         self.HudMovieNew = hud;
-        self.HudMovieSide = 0;
+        self.HudMovieSide = self.PlayerNum;
 
         hud.CharacterAcronyms[0] = ownAcronym;
         if (gri!.IsMultiplayer())
@@ -188,9 +188,6 @@ public sealed class SplitScreenHUD : Script
         {
             var gadgets = new RHudExtensionGadgets(self) { PlayerSideIndex = self.HudMovieSide };
             gadgets.Init(self, "GadgetSelect", $"ModuleGadgetSelect{acronym}");
-
-            // Set this manually
-            gadgets.SetGadgetIconName($"Icons_{acronym}");
         }
 
         var targets = new RHudExtensionTargets(self) { PlayerSideIndex = self.HudMovieSide };
