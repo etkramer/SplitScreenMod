@@ -201,6 +201,14 @@ public sealed class SplitScreenRenderingDOF : Script
                 dofManager.Dof = DisableDof(dofManager.Dof);
                 dofManager.OldDof = DisableDof(dofManager.OldDof);
                 dofManager.ChangedDof = false;
+
+                // Resonator patches PP directly,
+                // bypassing the volume + DOFManager paths. Zero its DOF fields.
+                camera!.ResonatorScreenScene_DOFNear = 0f;
+                camera.ResonatorScreenScene_DOFFar = 0f;
+                camera.ResonatorScreenScene_DOFFalloff = 0f;
+                camera.ResonatorScreenScene_DOFRadius = 0f;
+                camera.ResonatorScreenScene_DOFDistance = 0f;
             }
         }
 
