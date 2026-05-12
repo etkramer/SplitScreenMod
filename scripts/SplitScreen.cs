@@ -107,15 +107,6 @@ public class SplitScreen : Script
             p2.Size.X = 0.5f;
             p2.Origin.X = 0.25f;
         }
-
-        // Disable RockOn effect (broken in split-screen)
-        foreach (var player in engine.GamePlayers)
-        {
-            var rockOnEffect = player.PlayerPostProcess.Effects.FirstOrDefault(o =>
-                o.Name == "RockOn"
-            );
-            rockOnEffect?.bShowInGame = false;
-        }
     }
 
     // Ensure players aren't spawned in the void
