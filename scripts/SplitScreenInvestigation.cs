@@ -2,6 +2,7 @@ using BmSDK;
 using BmSDK.BmGame;
 using BmSDK.GFxUI;
 
+// Fixes a bug where investigation sequences don't trigger in split-screen
 [Script]
 public sealed class SplitScreenInvestigation : Script
 {
@@ -35,7 +36,8 @@ public sealed class SplitScreenInvestigation : Script
 
         if (self.HudMovieNew.InvestigateMovie == null)
         {
-            self.HudMovieNew.InvestigateMovie = GameObject.ConstructObject<RHudExtensionInvestigate>(self);
+            self.HudMovieNew.InvestigateMovie =
+                GameObject.ConstructObject<RHudExtensionInvestigate>(self);
             self.HudMovieNew.InvestigateMovie?.Init(self, "", "");
             self.HudMovieNew.SetInvestigateModeAuto();
         }
@@ -46,7 +48,7 @@ public sealed class SplitScreenInvestigation : Script
         self.UpdateCrimeSceneInfo();
     }
 
-    private static SwfMovie GetSpecialForensicsHud(RGameRI gri, int multiplayerIndex)
+    private static SwfMovie? GetSpecialForensicsHud(RGameRI gri, int multiplayerIndex)
     {
         if (gri == null)
         {

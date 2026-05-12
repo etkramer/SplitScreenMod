@@ -2,8 +2,7 @@ using System.Numerics;
 using BmSDK.BmGame;
 using BmSDK.Engine;
 
-#nullable disable
-
+// Adds custom combat behavior for split-screen, where enemies split into groups by player
 [Script]
 public sealed class SplitScreenCombat : Script
 {
@@ -63,8 +62,7 @@ public sealed class SplitScreenCombat : Script
 
         for (var i = 0; i < engine.GamePlayers.Count; i++)
         {
-            var player = engine.GamePlayers[i]?.Actor?.Pawn as RPawnPlayer;
-            if (player == null || player.Health <= 0)
+            if (engine.GamePlayers[i]?.Actor?.Pawn is not RPawnPlayer player || player.Health <= 0)
             {
                 continue;
             }
@@ -75,7 +73,7 @@ public sealed class SplitScreenCombat : Script
         return players;
     }
 
-    private static RPawnPlayer ChooseBestLocalPlayer(
+    private static RPawnPlayer? ChooseBestLocalPlayer(
         Actor source,
         RBMAIController aiController,
         RPawnPlayer currentPlayer,
@@ -93,7 +91,7 @@ public sealed class SplitScreenCombat : Script
             return null;
         }
 
-        RPawnPlayer bestPlayer = null;
+        RPawnPlayer? bestPlayer = null;
         var bestScore = float.MinValue;
 
         for (var i = 0; i < localPlayers.Count; i++)
@@ -143,7 +141,7 @@ public sealed class SplitScreenCombat : Script
             );
     }
 
-    private static RPawnPlayer ChooseBestTarget(RPawnVillain villain, bool requireVisible)
+    private static RPawnPlayer? ChooseBestTarget(RPawnVillain villain, bool requireVisible)
     {
         return villain == null
             ? null
@@ -215,7 +213,7 @@ public sealed class SplitScreenCombat : Script
 
         var bestPlayer = ChooseBestLocalPlayer(
             behaviour.HostPawn,
-            behaviour.HostPawn.Controller as RBMAIController,
+            behaviour.HostPawn.AIController,
             behaviour.Batman,
             requireVisible: false
         );
@@ -292,8 +290,7 @@ public sealed class SplitScreenCombat : Script
         for (var i = 0; i < aiManager.GlobalControllerInfoList.Count; i++)
         {
             var controller = aiManager.GlobalControllerInfoList[i].Controller;
-            var pawn = controller?.Pawn as RBMPawnAI;
-            if (pawn == null || pawn.bFriendly)
+            if (controller?.Pawn is not RBMPawnAI pawn || pawn.bFriendly)
             {
                 continue;
             }
@@ -411,10 +408,9 @@ public sealed class SplitScreenCombat : Script
                 player.PlayerIndex = p;
             }
 
-            var playerController = player.Controller as RPlayerController;
             var playerLevelVolume = gameInfo.GetLevelVolumeFor(predVolume);
             if (
-                playerController != null
+                player.Controller is RPlayerController playerController
                 && (
                     gri?.IsOverworldGameplay() == true
                     || gri?.CurrentLevelVolume == playerLevelVolume
@@ -432,8 +428,7 @@ public sealed class SplitScreenCombat : Script
         float noiseRadius
     )
     {
-        var pawn = controller?.Pawn as RBMPawnAI;
-        if (pawn == null || pawn.bFriendly || pawn.bIsValidCombatant)
+        if (controller?.Pawn is not RBMPawnAI pawn || pawn.bFriendly || pawn.bIsValidCombatant)
         {
             return;
         }
@@ -538,7 +533,7 @@ public sealed class SplitScreenCombat : Script
     {
         return !IsSplitScreenActive() || self.PawnVillain?.bIsSilentPredV2 == true
             ? self.FindAlertForPlayer()
-            : ChooseBestAlert(self, (RPawnPlayer)self.PawnVillain?.GetTargetPlayer())
+            : ChooseBestAlert(self, (RPawnPlayer)self.PawnVillain!.GetTargetPlayer())
                 ?? self.FindAlertForPlayer();
     }
 

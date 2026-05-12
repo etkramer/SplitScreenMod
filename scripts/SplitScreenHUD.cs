@@ -5,6 +5,7 @@ using BmSDK.BmGame;
 using BmSDK.Engine;
 using BmSDK.GFxUI;
 
+// Fixes a bug where P2 doesn't have any HUD
 [Script]
 public sealed class SplitScreenHUD : Script
 {
@@ -129,7 +130,7 @@ public sealed class SplitScreenHUD : Script
         hud.Init(localPlayer);
         hud.Advance(0.0f);
         hud.SetFocus(false, false);
-        hud.SetViewportSplitscreenIndex(0);
+        hud.SetViewportSplitscreenIndex(self.PlayerNum);
 
         self.HudMovieNew = hud;
         self.HudMovieSide = self.PlayerNum;
@@ -137,7 +138,7 @@ public sealed class SplitScreenHUD : Script
         hud.CharacterAcronyms[0] = ownAcronym;
         if (gri!.IsMultiplayer())
         {
-            var otherAcronym = GetCharacterAcronym(gri, multiplayerIndex == 0 ? 1 : 0);
+            var otherAcronym = GetCharacterAcronym(gri, self.PlayerNum == 0 ? 1 : 0);
             if (otherAcronym != null)
             {
                 hud.CharacterAcronyms[1] = otherAcronym;

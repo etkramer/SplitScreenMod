@@ -1,6 +1,7 @@
 ﻿using BmSDK.BmGame;
 using BmSDK.Engine;
 
+// Adds skeletons to players in detective mode
 [Script]
 public class SplitScreenSkeleton : Script
 {

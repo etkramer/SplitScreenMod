@@ -1,7 +1,9 @@
 using System.Runtime.InteropServices;
 using BmSDK;
 using BmSDK.BmGame;
+using Process = System.Diagnostics.Process;
 
+// Fixes a bug with the DOF/bloom effects where P1's bloom is rendered over P2's screen
 [Script]
 public sealed class SplitScreenRenderingDOF : Script
 {
@@ -9,6 +11,7 @@ public sealed class SplitScreenRenderingDOF : Script
     // sample/write from (0, 0) so one view doesn't bleed into another.
     public const IntPtr RockGaussianBlurOffset = 0x5A1DE0;
     public const IntPtr RockDOFBlurOffset = 0x5A2DE0;
+    private const int RockOnBloomClearBranchOffset = 0x110BF1;
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     public delegate void RockGaussianBlurDelegate(
@@ -57,6 +60,8 @@ public sealed class SplitScreenRenderingDOF : Script
 
     public override void Main()
     {
+        PatchRockOnBloomClear();
+
         _gaussianBlurOriginal = DetourUtil.NewDetour<RockGaussianBlurDelegate>(
             RockGaussianBlurOffset,
             GaussianBlurDetour
@@ -68,6 +73,51 @@ public sealed class SplitScreenRenderingDOF : Script
         );
 
         base.Main();
+    }
+
+    private static unsafe void PatchRockOnBloomClear()
+    {
+        PatchInstruction(
+            RockOnBloomClearBranchOffset,
+            expected0: 0x74,
+            expected1: 0x20,
+            replacement0: 0x90,
+            replacement1: 0x90,
+            "RockOn bloom clear patch"
+        );
+    }
+
+    private static unsafe void PatchInstruction(
+        int offset,
+        byte expected0,
+        byte expected1,
+        byte replacement0,
+        byte replacement1,
+        string label
+    )
+    {
+        var baseAddr = Process.GetCurrentProcess().MainModule!.BaseAddress;
+        var patchAddr = (byte*)(baseAddr + offset);
+
+        if (patchAddr[0] != expected0 || patchAddr[1] != expected1)
+        {
+            Debug.LogWarning(
+                $"{label}: unexpected bytes at patch site "
+                    + $"({patchAddr[0]:X2} {patchAddr[1]:X2}), skipping"
+            );
+            return;
+        }
+
+        if (!PInvoke.VirtualProtect((IntPtr)patchAddr, 2, 0x40, out var oldProtect))
+        {
+            Debug.LogWarning($"{label}: VirtualProtect failed");
+            return;
+        }
+
+        patchAddr[0] = replacement0;
+        patchAddr[1] = replacement1;
+
+        PInvoke.VirtualProtect((IntPtr)patchAddr, 2, oldProtect, out _);
     }
 
     private static void GaussianBlurDetour(

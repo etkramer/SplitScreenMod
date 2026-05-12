@@ -3,6 +3,7 @@ using BmSDK.BmGame;
 using BmSDK.BmScript;
 using BmSDK.Engine;
 
+// Adds support for swapping characters based on mods.toml
 [Script]
 public class SplitScreenCharacter : Script
 {

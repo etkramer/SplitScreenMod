@@ -1,9 +1,7 @@
 using System.Runtime.InteropServices;
 using Process = System.Diagnostics.Process;
 
-// Split-screen culling only processes Views[0]. Re-run it for each extra view by
-// temporarily exposing that view as Views[0].
-
+// Fixes a bug with frustum culling where no primitives are rendered for P2
 [Script]
 public sealed class SplitScreenRendering : Script
 {
@@ -24,65 +22,14 @@ public sealed class SplitScreenRendering : Script
 
     private static ProcessPrimitiveCullingDelegate? _ProcessPrimitiveCullingDetourBase = null;
 
-    // The shared half-size bloom buffer is conditionally cleared; force it
-    // to always clear so per-view content doesn't leak between players.
-    private const int RockOnBloomClearBranchOffset = 0x110BF1;
-
     public override void Main()
     {
-        PatchRockOnBloomClear();
-
         _ProcessPrimitiveCullingDetourBase = DetourUtil.NewDetour<ProcessPrimitiveCullingDelegate>(
             ProcessPrimitiveCullingOffset,
             ProcessPrimitiveCullingDetour
         );
 
         base.Main();
-    }
-
-    private static unsafe void PatchRockOnBloomClear()
-    {
-        PatchInstruction(
-            RockOnBloomClearBranchOffset,
-            expected0: 0x74,
-            expected1: 0x20,
-            replacement0: 0x90,
-            replacement1: 0x90,
-            "RockOn bloom clear patch"
-        );
-    }
-
-    private static unsafe void PatchInstruction(
-        int offset,
-        byte expected0,
-        byte expected1,
-        byte replacement0,
-        byte replacement1,
-        string label
-    )
-    {
-        var baseAddr = Process.GetCurrentProcess().MainModule!.BaseAddress;
-        var patchAddr = (byte*)(baseAddr + offset);
-
-        if (patchAddr[0] != expected0 || patchAddr[1] != expected1)
-        {
-            Debug.LogWarning(
-                $"{label}: unexpected bytes at patch site "
-                    + $"({patchAddr[0]:X2} {patchAddr[1]:X2}), skipping"
-            );
-            return;
-        }
-
-        if (!PInvoke.VirtualProtect((IntPtr)patchAddr, 2, 0x40, out var oldProtect))
-        {
-            Debug.LogWarning($"{label}: VirtualProtect failed");
-            return;
-        }
-
-        patchAddr[0] = replacement0;
-        patchAddr[1] = replacement1;
-
-        PInvoke.VirtualProtect((IntPtr)patchAddr, 2, oldProtect, out _);
     }
 
     private static unsafe void ProcessPrimitiveCullingDetour(

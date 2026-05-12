@@ -3,6 +3,7 @@ using BmSDK;
 using BmSDK.BmGame;
 using BmSDK.Engine;
 
+// Loads world cells around P2 as well as P1
 [Script]
 public sealed class SplitScreenStreaming : Script
 {
