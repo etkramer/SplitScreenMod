@@ -169,6 +169,11 @@ public sealed class SplitScreenStreaming : Script
 
     private static bool HasStreamingContext(RGameRI gri)
     {
+        if (gri.LevelStreamingLocked || gri.LevelStreamingInitialising)
+        {
+            return false;
+        }
+
         var engine = Game.GetEngine();
         if (engine == null || engine.GamePlayers.Count == 0 || gri.LevelVolumeList.Count == 0)
         {
