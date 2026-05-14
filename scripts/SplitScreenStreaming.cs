@@ -28,26 +28,122 @@ public sealed class SplitScreenStreaming : Script
     public override void OnTick()
     {
         var gri = Game.GetGameRI();
-        if (gri == null || !HasStreamingContext(gri))
+        var worldInfo = Game.GetWorldInfo();
+        if (gri == null || worldInfo == null || !HasStreamingContext(gri))
         {
             return;
         }
 
-        SyncExpandedStreaming(gri);
+        // WorldInfo is our Originator sentinel -- the engine never uses it for streaming,
+        // so filtering by it gives us a clean ours-only view (kismet uses gri, volumes
+        // use themselves, etc.).
+        SyncExpandedStreaming(gri, worldInfo);
     }
 
     private static void RefreshLateAndFarLevelsDetour(IntPtr self)
     {
+        // Let the original run so P1's _Late/_FAR flags are managed correctly
+        // when CurrentLevel changes. We re-assert flags for P2+ afterwards.
+        _refreshLateAndFarLevelsOriginal!.Invoke(self);
+
         var engine = Game.GetEngine();
-        if (engine != null && engine.GamePlayers.Count > 1)
+        if (engine == null || engine.GamePlayers.Count <= 1)
         {
             return;
         }
 
-        _refreshLateAndFarLevelsOriginal!.Invoke(self);
+        var gri = Game.GetGameRI();
+        var worldInfo = Game.GetWorldInfo();
+        if (gri == null || worldInfo == null)
+        {
+            return;
+        }
+
+        var interests = CollectExtraPlayerInterests(gri, engine);
+        if (interests.Count == 0)
+        {
+            return;
+        }
+
+        // Same-frame fix-up: the engine just cleared bits on variants whose
+        // BaseLevel didn't match P1's CurrentLevel. Set them back for P2+'s
+        // interests before UpdateLevelStreaming reads the result.
+        foreach (var ls in worldInfo.StreamingLevels)
+        {
+            if (ls == null)
+            {
+                continue;
+            }
+
+            var name = ls.PackageName.ToString();
+            if (string.IsNullOrEmpty(name) || !IsLateOrFarVariant(name))
+            {
+                continue;
+            }
+
+            foreach (var interest in interests)
+            {
+                if (name.Length > interest.Length
+                    && name[interest.Length] == '_'
+                    && name.StartsWith(interest, StringComparison.OrdinalIgnoreCase))
+                {
+                    ls.bShouldBeLoaded = true;
+                    ls.bShouldBeVisible = true;
+                    ls.bHighPriorityLoadRequest = true;
+                    break;
+                }
+            }
+        }
     }
 
-    private static void SyncExpandedStreaming(RGameRI gri)
+    private static bool IsLateOrFarVariant(string name)
+    {
+        return name.IndexOf("_late", StringComparison.OrdinalIgnoreCase) >= 0
+            || name.IndexOf("_far", StringComparison.OrdinalIgnoreCase) >= 0;
+    }
+
+    private static HashSet<string> CollectExtraPlayerInterests(RGameRI gri, GameEngine engine)
+    {
+        var interests = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+        for (var i = 1; i < engine.GamePlayers.Count; i++)
+        {
+            var pawn = engine.GamePlayers[i]?.Actor?.Pawn;
+            if (pawn == null || pawn.Health <= 0)
+            {
+                continue;
+            }
+
+            var volume = FindPlayerCenterVolume(gri, pawn);
+            if (volume == null)
+            {
+                continue;
+            }
+
+            AddInterest(interests, volume.Level);
+            foreach (var info in volume.OtherLevelsVisibleInfo)
+            {
+                AddInterest(interests, info.LevelName);
+            }
+            foreach (var info in volume.OtherLevelLODsVisibleInfo)
+            {
+                AddInterest(interests, info.LevelName);
+            }
+        }
+
+        return interests;
+    }
+
+    private static void AddInterest(HashSet<string> interests, FName name)
+    {
+        var s = name.ToString();
+        if (!string.IsNullOrEmpty(s) && !s.Equals("None", StringComparison.OrdinalIgnoreCase))
+        {
+            interests.Add(s);
+        }
+    }
+
+    private static void SyncExpandedStreaming(RGameRI gri, WorldInfo originator)
     {
         var desiredFull = new Dictionary<string, DesiredStreamingRequest>(
             StringComparer.OrdinalIgnoreCase
@@ -76,26 +172,47 @@ public sealed class SplitScreenStreaming : Script
         // in ourFull also appears in StreamingLevelsLODs with our originator.
         // Exclude those from ourLOD so we don't drop them as stale -- they
         // belong to the Full request and get cleaned up when it's removed.
-        var ourFull = CollectOurs(gri, gri.StreamingLevels);
-        var ourLOD = CollectOurs(gri, gri.StreamingLevelsLODs);
+        var ourFull = CollectOurs(originator, gri.StreamingLevels);
+        var ourLOD = CollectOurs(originator, gri.StreamingLevelsLODs);
         foreach (var key in ourFull.Keys)
         {
             ourLOD.Remove(key);
         }
 
-        Sync(gri, ourFull, desiredFull, isLOD: false);
-        Sync(gri, ourLOD, desiredLOD, isLOD: true);
+        Sync(gri, originator, ourFull, desiredFull, isLOD: false);
+        Sync(gri, originator, ourLOD, desiredLOD, isLOD: true);
+    }
+
+    private static void RemoveOurEntry(
+        TArray<RGameRI.FStreamingLevelInfo> engineList,
+        FName levelName,
+        WorldInfo originator
+    )
+    {
+        for (var i = 0; i < engineList.Count; i++)
+        {
+            var info = engineList[i];
+            if (
+                info.Level.Index == levelName.Index
+                && info.Level.Number == levelName.Number
+                && ReferenceEquals(info.Originator, originator)
+            )
+            {
+                engineList.RemoveAt(i);
+                return;
+            }
+        }
     }
 
     private static Dictionary<string, FName> CollectOurs(
-        RGameRI gri,
+        WorldInfo originator,
         TArray<RGameRI.FStreamingLevelInfo> engineList
     )
     {
         var map = new Dictionary<string, FName>(StringComparer.OrdinalIgnoreCase);
         foreach (var info in engineList)
         {
-            if (!ReferenceEquals(info.Originator, gri))
+            if (!ReferenceEquals(info.Originator, originator))
             {
                 continue;
             }
@@ -114,11 +231,14 @@ public sealed class SplitScreenStreaming : Script
 
     private static void Sync(
         RGameRI gri,
+        WorldInfo originator,
         Dictionary<string, FName> ours,
         Dictionary<string, DesiredStreamingRequest> desired,
         bool isLOD
     )
     {
+        var engineList = isLOD ? gri.StreamingLevelsLODs : gri.StreamingLevels;
+
         foreach (var (levelKey, levelName) in ours)
         {
             if (desired.ContainsKey(levelKey))
@@ -126,14 +246,9 @@ public sealed class SplitScreenStreaming : Script
                 continue;
             }
 
-            if (isLOD)
-            {
-                gri.RemoveStreamingLevelLODRequest(levelName, gri);
-            }
-            else
-            {
-                gri.RemoveStreamingLevelRequest(levelName, gri);
-            }
+            // Bypass RemoveStreamingLevelRequest -- its UnloadLevel queue path
+            // clears bShouldBeLoaded and overrides kismet's vote.
+            RemoveOurEntry(engineList, levelName, originator);
         }
 
         foreach (var (levelKey, request) in desired)
@@ -147,7 +262,7 @@ public sealed class SplitScreenStreaming : Script
             {
                 gri.AddStreamingLevelLODRequest(
                     request.LevelName,
-                    gri,
+                    originator,
                     false,
                     Vector3.Zero,
                     request.Borders
@@ -157,7 +272,7 @@ public sealed class SplitScreenStreaming : Script
             {
                 gri.AddStreamingLevelRequest(
                     request.LevelName,
-                    gri,
+                    originator,
                     false,
                     Vector3.Zero,
                     request.Borders,
