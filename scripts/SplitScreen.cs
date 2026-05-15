@@ -24,7 +24,6 @@ public class SplitScreen : Script
         RGameInfo.DefaultObject.MaxPlayers = 4;
     }
 
-
     public override void OnKeyDown(Keys key)
     {
         // Debug actions based on key press.
@@ -79,7 +78,6 @@ public class SplitScreen : Script
         self.ActiveSplitscreenType = splitType;
     }
 
-    // TODO: Fix bloom effect and remove.
     [Redirect(typeof(GameViewportClient), nameof(GameViewportClient.LayoutPlayers))]
     public static void LayoutPlayersRedirect(GameViewportClient self)
     {
@@ -107,6 +105,10 @@ public class SplitScreen : Script
             p2.Origin.X = 0.25f;
         }
     }
+
+    // Force IsMultiplayer() to return false - fixes the level-up screen and possibly other bugs
+    [Redirect(typeof(RGameRI), nameof(RGameRI.IsMultiplayer))]
+    private static bool IsMultiplayerRedirect(RGameRI self) => false;
 
     // Ensure players aren't spawned in the void
     [Redirect(typeof(RPlayerStartInLevel), nameof(RPlayerStartInLevel.MovePlayerHere))]
