@@ -17,6 +17,14 @@ public class SplitScreen : Script
         Instance = this;
     }
 
+    public override void Main()
+    {
+        // Allow up to 4 players
+        Game.GetGameInfo().MaxPlayers = 4;
+        RGameInfo.DefaultObject.MaxPlayers = 4;
+    }
+
+
     public override void OnKeyDown(Keys key)
     {
         // Debug actions based on key press.

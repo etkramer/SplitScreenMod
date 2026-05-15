@@ -9,9 +9,6 @@ public class SplitScreenCharacter : Script
 {
     public override void Main()
     {
-        RGameInfo.DefaultObject.MaxPlayers = 4;
-        RGameInfo.DefaultObject.MaxPlayersAllowed = 4;
-
         var options = SplitScreen.Instance.Options;
         var playerConfigs = (TomlArray)options["players"];
 
@@ -39,13 +36,6 @@ public class SplitScreenCharacter : Script
                 ),
             };
         }
-    }
-
-    public override void OnTick()
-    {
-        Game.GetGameInfo().MaxPlayers = 4;
-        Game.GetGameInfo().MaxPlayersAllowed = 4;
-        base.OnTick();
     }
 
     [ScriptComponent(AutoAttach = true)]
