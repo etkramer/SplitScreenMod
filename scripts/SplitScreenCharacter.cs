@@ -27,7 +27,7 @@ public class SplitScreenCharacter : Script
 
                 Owner.PlayerCharacters[i + 1] = new RGameRI.FLoadedPlayerCharacter()
                 {
-                    CharacterName = (string)playerConfig[0]!,
+                    CharacterName = characterName,
                     MeshName = meshName,
                 };
             }
