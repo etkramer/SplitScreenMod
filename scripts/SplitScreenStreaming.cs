@@ -33,8 +33,16 @@ public sealed class SplitScreenStreaming : Script
         // push 4E20h ; push 2EE0h ; call (E8) -- octree ctor call site.
         ReadOnlySpan<byte> expected =
         [
-            0x68, 0x20, 0x4E, 0x00, 0x00,
-            0x68, 0xE0, 0x2E, 0x00, 0x00,
+            0x68,
+            0x20,
+            0x4E,
+            0x00,
+            0x00,
+            0x68,
+            0xE0,
+            0x2E,
+            0x00,
+            0x00,
             0xE8,
         ];
 
@@ -420,27 +428,17 @@ public sealed class SplitScreenStreaming : Script
         {
             return;
         }
+
         self.UnTouch(Other);
     }
 
     private static bool IsExtraPlayerPawn(Actor? other)
     {
-        if (other == null)
+        if (other is not RPawnPlayer pawn)
         {
             return false;
         }
-        var engine = Game.GetEngine();
-        if (engine == null)
-        {
-            return false;
-        }
-        for (var i = 1; i < engine.GamePlayers.Count; i++)
-        {
-            if (engine.GamePlayers[i]?.Actor?.Pawn == other)
-            {
-                return true;
-            }
-        }
-        return false;
+
+        return pawn.PlayerController?.GetMultiplayerIndex() != 0;
     }
 }
