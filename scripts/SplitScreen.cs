@@ -151,6 +151,25 @@ public class SplitScreen : Script
         }
     }
 
+    [Redirect(typeof(RPlayerController), nameof(RPlayerController.SetSaveLocation))]
+    private static void SetSaveLocationRedirect(RPlayerController self, Vector3 Loc, Rotator Rot)
+    {
+        self.SetSaveLocation(Loc, Rot);
+
+        var engine = Game.GetEngine();
+        foreach (var player in engine.GamePlayers)
+        {
+            if (player?.Actor is not RPlayerController pc || ReferenceEquals(pc, self))
+            {
+                continue;
+            }
+
+            pc.SaveGameLocation = self.SaveGameLocation;
+            pc.SaveGameRotation = self.SaveGameRotation;
+            pc.SaveGameSetTime = self.SaveGameSetTime;
+        }
+    }
+
     // Fix local player checks for 3P/4P (resolves challenge map spawn issues)
     [Redirect(typeof(RPlayerController), nameof(RPlayerController.IsPrimaryLocalPlayer))]
     private static bool IsPrimaryLocalPlayerRedirect(RPlayerController self)

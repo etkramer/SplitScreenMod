@@ -439,6 +439,11 @@ public sealed class SplitScreenStreaming : Script
             return false;
         }
 
-        return pawn.PlayerController?.GetMultiplayerIndex() != 0;
+        if (pawn.PlayerController is not RPlayerController pc)
+        {
+            return false;
+        }
+
+        return pc.GetMultiplayerIndex() != 0;
     }
 }
