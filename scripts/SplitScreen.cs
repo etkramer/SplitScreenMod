@@ -61,6 +61,13 @@ public class SplitScreen : Script
                 pawn.Rotation = player2.Rotation;
             }
         }
+        else if (key == Keys.V)
+        {
+            Debug.Log("Toggling ghost");
+
+            var cheatManager = Game.GetCheatManager();
+            cheatManager.ToggleGhost();
+        }
         else if (key == Keys.O)
         {
             var engine = Game.GetEngine();

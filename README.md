@@ -7,7 +7,7 @@ Adds support for 2-player split-screen to Batman: Arkham City, allowing you to p
 
 ## ⚠️ Warning (important)
 
-This is an early test version of the split-screen mod. There is currently a **⚠️ high risk of save corruption ⚠️** when using this mod. **Do not** use this mod on a save slot you don't want to lose - create a new one to play coop with.
+This is an early in-development version of the split-screen mod. There are currently several things that can break during the campaign, especially if P2 triggers them instead of P1. If this happens, it's recommended that you restart from checkpoint or use the ghost/teleport keybinds to get past it.
 
 ## 🚀 Getting started
 Follow these steps to set up the mod for the first time:
@@ -19,5 +19,6 @@ Follow these steps to set up the mod for the first time:
 ## 🎮 Controls
 - G: Add a player
 - O: Remove a player
-- T: Teleport all players to P1
-- Y: Teleport all players to P2
+- T: Teleport all players to P1 (if you get stuck)
+- Y: Teleport all players to P2 (if you get stuck)
+- V: Toggle ghost (if you get stuck)
