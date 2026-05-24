@@ -1,6 +1,8 @@
 ﻿using BmSDK.BmGame;
 using BmSDK.Engine;
 
+namespace Etkramer.SplitScreen.Rendering;
+
 // Adds skeletons to players in detective mode
 [Script]
 public class SplitScreenSkeleton : Script

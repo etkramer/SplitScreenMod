@@ -1,5 +1,6 @@
 using System.Runtime.InteropServices;
-using Process = System.Diagnostics.Process;
+
+namespace Etkramer.SplitScreen.Rendering;
 
 // Fixes a bug with frustum culling where no primitives are rendered for P2
 [Script]
