@@ -1,5 +1,6 @@
-using BmSDK;
 using BmSDK.BmGame;
+
+namespace Etkramer.SplitScreen.Gameplay;
 
 // Allows hits to go through on ragdolled pawns, preventing accidental combo loss in split-screen
 [Script]

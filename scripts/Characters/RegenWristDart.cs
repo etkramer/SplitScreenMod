@@ -3,6 +3,8 @@ using BmSDK;
 using BmSDK.BmGame;
 using BmSDK.BmScript;
 
+namespace Etkramer.SplitScreen.Characters;
+
 [ScriptComponent(AutoAttach = true)]
 sealed class RestockWristDartComponent : ScriptComponent<RNightwingWristDart>
 {

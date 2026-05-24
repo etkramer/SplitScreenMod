@@ -2,6 +2,8 @@ using BmSDK;
 using BmSDK.BmGame;
 using BmSDK.GFxUI;
 
+namespace Etkramer.SplitScreen.Rendering;
+
 // Fixes a bug where investigation sequences don't trigger in split-screen
 [Script]
 public sealed class SplitScreenInvestigation : Script

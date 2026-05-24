@@ -1,7 +1,8 @@
 using System.Runtime.InteropServices;
-using BmSDK;
 using BmSDK.BmGame;
 using Process = System.Diagnostics.Process;
+
+namespace Etkramer.SplitScreen.Rendering;
 
 // Fixes a bug with the DOF/bloom effects where P1's bloom is rendered over P2's screen
 [Script]

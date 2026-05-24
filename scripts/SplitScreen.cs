@@ -4,6 +4,8 @@ using BmSDK.BmGame;
 using BmSDK.Engine;
 using ESplitScreenType = BmSDK.Engine.GameViewportClient.ESplitScreenType;
 
+namespace Etkramer.SplitScreen;
+
 [Script]
 public class SplitScreen : Script
 {
@@ -14,7 +16,7 @@ public class SplitScreen : Script
 
     public SplitScreen()
     {
-        Instance = this;
+        Instance ??= this;
     }
 
     public override void Main()

@@ -1,5 +1,7 @@
 using BmSDK.BmGame;
 
+namespace Etkramer.SplitScreen.Gameplay;
+
 // Fixes scoring for challenge maps so that P1 and P2 share the same score
 [Script]
 public sealed class SplitScreenChallenges : Script

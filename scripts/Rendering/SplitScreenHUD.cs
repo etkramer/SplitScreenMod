@@ -1,9 +1,9 @@
-using System;
-using System.Numerics;
 using BmSDK;
 using BmSDK.BmGame;
 using BmSDK.Engine;
 using BmSDK.GFxUI;
+
+namespace Etkramer.SplitScreen.Rendering;
 
 // Fixes a bug where P2 doesn't have any HUD
 [Script]
