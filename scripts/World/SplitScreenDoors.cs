@@ -13,7 +13,7 @@ public class SplitScreenDoors : Script
     private static readonly Dictionary<
         RLevelTransitionDoorBase,
         RPlayerController
-    > InteractingByDoor = new();
+    > InteractingByDoor = [];
 
     [Redirect(
         typeof(RLevelTransitionDoorBase),
