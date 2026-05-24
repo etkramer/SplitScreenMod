@@ -16,7 +16,7 @@ public class SplitScreen : Script
 
     public SplitScreen()
     {
-        Instance = this;
+        Instance ??= this;
     }
 
     public override void Main()
