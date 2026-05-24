@@ -4,6 +4,8 @@ using BmSDK;
 using BmSDK.BmGame;
 using BmSDK.Engine;
 
+namespace Etkramer.SplitScreen.World;
+
 // Loads world cells around P2 in addition to P1
 [Script]
 public sealed class SplitScreenStreaming : Script

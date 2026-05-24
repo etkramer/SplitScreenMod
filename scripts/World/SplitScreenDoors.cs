@@ -2,6 +2,8 @@ using BmSDK;
 using BmSDK.BmGame;
 using BmSDK.Engine;
 
+namespace Etkramer.SplitScreen.World;
+
 // Door interactions assume there is only one player. Without these redirects,
 // when P2 uses a door the engine plays the open-door animation on P1 (because
 // the door's internals call WorldInfo.Game.GetPC() which always returns P1).
