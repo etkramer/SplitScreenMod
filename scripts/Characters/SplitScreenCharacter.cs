@@ -1,7 +1,7 @@
-using BmSDK;
 using BmSDK.BmGame;
-using BmSDK.BmScript;
 using BmSDK.Engine;
+
+namespace Etkramer.SplitScreen.Characters;
 
 // Adds support for swapping characters based on mods.toml
 [Script]
