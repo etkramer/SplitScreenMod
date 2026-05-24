@@ -2,6 +2,8 @@ using System.Numerics;
 using BmSDK.BmGame;
 using BmSDK.Engine;
 
+namespace Etkramer.SplitScreen.Gameplay;
+
 // Adds custom combat behavior for split-screen, where enemies split into groups by player
 [Script]
 public sealed class SplitScreenCombat : Script

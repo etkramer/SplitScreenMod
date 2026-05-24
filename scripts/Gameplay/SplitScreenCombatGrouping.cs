@@ -1,7 +1,9 @@
+#nullable disable
+
 using System.Numerics;
 using BmSDK.BmGame;
 
-#nullable disable
+namespace Etkramer.SplitScreen.Gameplay;
 
 public static class SplitScreenCombatGrouping
 {

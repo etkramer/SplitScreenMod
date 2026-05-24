@@ -1,5 +1,7 @@
 using BmSDK.BmGame;
 
+namespace Etkramer.SplitScreen.Gameplay;
+
 /// <summary>
 /// Fixes predator/stealth detection for extra players in split-screen.
 ///
