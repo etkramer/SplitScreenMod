@@ -2,6 +2,7 @@
 using BmSDK;
 using BmSDK.BmGame;
 using BmSDK.Engine;
+using EAspectRatioAxisConstraint = BmSDK.GameObject.EAspectRatioAxisConstraint;
 using ESplitScreenType = BmSDK.Engine.GameViewportClient.ESplitScreenType;
 
 namespace Etkramer.SplitScreen;
@@ -12,7 +13,8 @@ public class SplitScreen : Script
     public static SplitScreen Instance { get; private set; } = null!;
 
     public TomlTable Options => (TomlTable)Mod.Config["options"];
-    public bool UseHorizontalLayout => (bool)Options["layout_horizontal"];
+    public bool UseHorizontalLayout => Convert.ToBoolean(Options["layout_horizontal"]);
+    public bool UseLetterboxing => Convert.ToBoolean(Options["letterboxing"]);
 
     public SplitScreen()
     {
@@ -121,10 +123,18 @@ public class SplitScreen : Script
             var p1 = engine.GamePlayers[0];
             var p2 = engine.GamePlayers[1];
 
-            p1.Size.X = 0.5f;
-            p1.Origin.X = 0.25f;
-            p2.Size.X = 0.5f;
-            p2.Origin.X = 0.25f;
+            if (Instance.UseLetterboxing)
+            {
+                p1.Size.X = 0.5f;
+                p1.Origin.X = 0.25f;
+                p2.Size.X = 0.5f;
+                p2.Origin.X = 0.25f;
+            }
+            else
+            {
+                p1.AspectRatioAxisConstraint = EAspectRatioAxisConstraint.AspectRatio_MaintainYFOV;
+                p2.AspectRatioAxisConstraint = EAspectRatioAxisConstraint.AspectRatio_MaintainYFOV;
+            }
         }
     }
 
