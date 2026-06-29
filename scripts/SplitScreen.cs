@@ -114,7 +114,7 @@ public class SplitScreen : Script
             return;
         }
 
-        // For 2-player horizontal, crop sides to maintain 16:9 layout
+        // For 2-player horizontal, crop to maintain aspect ratio
         if (
             engine.GamePlayers.Count == 2
             && self.ActiveSplitscreenType == ESplitScreenType.eSST_2P_HORIZONTAL
@@ -131,6 +131,28 @@ public class SplitScreen : Script
                 p2.Origin.X = 0.25f;
             }
             else
+            {
+                p1.AspectRatioAxisConstraint = EAspectRatioAxisConstraint.AspectRatio_MaintainYFOV;
+                p2.AspectRatioAxisConstraint = EAspectRatioAxisConstraint.AspectRatio_MaintainYFOV;
+            }
+        }
+        // For 2-player vertical, crop to maintain aspect ratio
+        else if (
+            self.ActiveSplitscreenType == ESplitScreenType.eSST_2P_VERTICAL 
+            && engine.GamePlayers.Count == 2
+        ) 
+        {
+            var p1 = engine.GamePlayers[0];
+            var p2 = engine.GamePlayers[1];
+
+            if (Instance.UseLetterboxing) 
+            {
+                p1.Size.Y = 0.5f;
+                p1.Origin.Y = 0.25f;
+                p2.Size.Y = 0.5f;
+                p2.Origin.Y = 0.25f;
+            }
+            else 
             {
                 p1.AspectRatioAxisConstraint = EAspectRatioAxisConstraint.AspectRatio_MaintainYFOV;
                 p2.AspectRatioAxisConstraint = EAspectRatioAxisConstraint.AspectRatio_MaintainYFOV;
