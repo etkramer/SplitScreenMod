@@ -369,9 +369,9 @@ public sealed class SplitScreenStreaming : Script
     private static TArray<RGameRI.FBorderInfo> CloneBorders(TArray<RGameRI.FBorderInfo> source)
     {
         var copy = new TArray<RGameRI.FBorderInfo>(source.Count);
-        for (var i = 0; i < source.Count; i++)
+        foreach (var border in source)
         {
-            copy[i] = source[i];
+            copy.Add(border);
         }
 
         return copy;
