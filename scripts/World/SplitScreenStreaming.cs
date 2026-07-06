@@ -362,19 +362,8 @@ public sealed class SplitScreenStreaming : Script
             // The engine retains the Borders TArray we pass to Add*Request, so
             // we must hand it a managed copy -- the volume-owned source can be
             // reallocated out from under it and dereferenced as garbage later.
-            AddDesiredRequest(desired, info.LevelName, CloneBorders(info.Borders), info.RoadHeight);
+            AddDesiredRequest(desired, info.LevelName, [.. info.Borders], info.RoadHeight);
         }
-    }
-
-    private static TArray<RGameRI.FBorderInfo> CloneBorders(TArray<RGameRI.FBorderInfo> source)
-    {
-        var copy = new TArray<RGameRI.FBorderInfo>(source.Count);
-        foreach (var border in source)
-        {
-            copy.Add(border);
-        }
-
-        return copy;
     }
 
     private static void AddDesiredRequest(
