@@ -28,57 +28,63 @@ public class SplitScreen : Script
         RGameInfo.DefaultObject.MaxPlayers = 4;
     }
 
+    // Debug actions based on key press.
     public override void OnKeyDown(Keys key)
     {
-        // Debug actions based on key press.
-        if (key == Keys.G)
+        if (Game.GetGameInfo().IsFrontend())
         {
-            var engine = Game.GetEngine();
-
-            // Spawn P2
-            var gameViewport = Game.GetGameViewportClient();
-            gameViewport.CreatePlayer(engine.GamePlayers.Count, out _, true);
-        }
-        else if (key == Keys.T)
-        {
-            var player1 = Game.GetPlayerPawn(0);
-
-            // Teleport players to P1
-            var engine = Game.GetEngine();
-            foreach (var player in engine.GamePlayers)
+            if (key == Keys.G)
             {
-                var pawn = player.Actor.Pawn;
-                pawn.Location = player1.Location;
-                pawn.Rotation = player1.Rotation;
+                var engine = Game.GetEngine();
+
+                // Spawn P2
+                var gameViewport = Game.GetGameViewportClient();
+                gameViewport.CreatePlayer(engine.GamePlayers.Count, out _, true);
+            }
+            else if (key == Keys.O)
+            {
+                var engine = Game.GetEngine();
+
+                // Remove P2
+                var gameViewport = Game.GetGameViewportClient();
+                gameViewport.RemovePlayer(engine.GamePlayers.LastOrDefault());
             }
         }
-        else if (key == Keys.Y)
+        else
         {
-            var player2 = Game.GetPlayerPawn(1);
-
-            // Teleport players to P2
-            var engine = Game.GetEngine();
-            foreach (var player in engine.GamePlayers)
+            if (key == Keys.T)
             {
-                var pawn = player.Actor.Pawn;
-                pawn.Location = player2.Location;
-                pawn.Rotation = player2.Rotation;
+                var player1 = Game.GetPlayerPawn(0);
+
+                // Teleport players to P1
+                var engine = Game.GetEngine();
+                foreach (var player in engine.GamePlayers)
+                {
+                    var pawn = player.Actor.Pawn;
+                    pawn.Location = player1.Location;
+                    pawn.Rotation = player1.Rotation;
+                }
             }
-        }
-        else if (key == Keys.V)
-        {
-            Debug.Log("Toggling ghost");
+            else if (key == Keys.Y)
+            {
+                var player2 = Game.GetPlayerPawn(1);
 
-            var cheatManager = Game.GetCheatManager();
-            cheatManager.ToggleGhost();
-        }
-        else if (key == Keys.O)
-        {
-            var engine = Game.GetEngine();
+                // Teleport players to P2
+                var engine = Game.GetEngine();
+                foreach (var player in engine.GamePlayers)
+                {
+                    var pawn = player.Actor.Pawn;
+                    pawn.Location = player2.Location;
+                    pawn.Rotation = player2.Rotation;
+                }
+            }
+            else if (key == Keys.V)
+            {
+                Debug.Log("Toggling ghost");
 
-            // Remove P2
-            var gameViewport = Game.GetGameViewportClient();
-            gameViewport.RemovePlayer(engine.GamePlayers.LastOrDefault());
+                var cheatManager = Game.GetCheatManager();
+                cheatManager.ToggleGhost();
+            }
         }
     }
 
