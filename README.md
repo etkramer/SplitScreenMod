@@ -5,7 +5,7 @@
 ## 📖 About
 Adds support for 2-player split-screen to Batman: Arkham City, allowing you to play through the main story and challenge maps with multiple players.
 
-Based on [BmSDK](https://github.com/etkramer/BmSDK), a C# modding framework for the game built by the same creators as the split-screen mod. Leave a star on both repos if you have fun with this!
+Based on [BmSDK](https://bmsdk.dev), a C# modding framework for the game built by the same creators as the split-screen mod. Leave a star on both repos if you have fun with this!
 
 ## ⚠️ Warning
 
@@ -13,7 +13,7 @@ This is an early in-development version of the split-screen mod. Several things 
 
 ## 🚀 Getting started
 Follow these steps to set up the mod for the first time:
-1. Install [BmSDK](https://github.com/etkramer/BmSDK#-getting-started)
+1. Install [BmSDK](https://github.com/Team-BmSDK/BmSDK-AC#-getting-started)
 2. Download the latest .zip from [here](https://github.com/etkramer/SplitScreenMod/archive/refs/heads/main.zip) and extract it into `%GameDir%\BmGame\Mods`
 3. If you've done everything right, your `Mods` folder should now have a `SplitScreenMod-main` folder inside it
 4. Done! Start the game as usual, then press "G" from the menu to add a new player
