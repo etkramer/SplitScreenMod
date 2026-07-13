@@ -33,4 +33,4 @@ If you run into issues getting the mod to work (i.e. the game crashes on startup
 1. Make sure you followed the install instructions exactly (for this and BmSDK)
 2. If you're on Steam, double-check that you installed the BmSDK compatability patch
 3. If you're on Steam and still nothing happens when you press a key, try running BatmanAC.exe directly instead of starting through Steam
-4. Make sure you're using DX11 mode - you can change this in the Arkham City Launcher. If the launcher doesn't work for you, you can try the [Advanced Launcher](https://www.nexusmods.com/batmanarkhamcity/mods/406) instead
+4. Try using DX11 or DX9 mode - depending on what works better for you. You can change this by enabling or disabling DX11 features in the Arkham City Launcher. If the launcher doesn't work for you, you can try the [Advanced Launcher](https://www.nexusmods.com/batmanarkhamcity/mods/406) instead
