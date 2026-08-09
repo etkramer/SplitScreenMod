@@ -31,3 +31,19 @@ public sealed class RemoveSlowMoComponent : ScriptComponent<RGameInfo>
         }
     }
 }
+
+[ScriptComponent(AutoAttach = true)]
+public sealed class FixLineLauncherSpeed : ScriptComponent<RSpecialMoveInstance_LineLauncher>
+{
+    [ComponentRedirect("UpdateSpecialMove", TargetState = "ZipLine")]
+    public bool UpdateSpecialMove(float dt)
+    {
+        if (Owner.bAiming && GameState.IsMultiplayer())
+        {
+            dt *= Owner.SlowMoFactor;
+            Debug.Log("Hooked!");
+        }
+
+        return Owner.UpdateSpecialMove(dt);
+    }
+}
