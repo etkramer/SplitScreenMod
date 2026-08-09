@@ -12,7 +12,7 @@ public sealed class RemoveSlowMoComponent : ScriptComponent<RGameInfo>
     [ComponentRedirect(nameof(RGameInfo.SetGameSpeed))]
     public void SetGameSpeed(float dt)
     {
-        if (Game.GetEngine().GamePlayers.Count < 2)
+        if (!GameState.IsMultiplayer())
         {
             Owner.SetGameSpeed(dt);
         }
@@ -24,7 +24,7 @@ public sealed class RemoveSlowMoComponent : ScriptComponent<RGameInfo>
     /// </summary>
     public override void OnTick()
     {
-        if (Game.GetEngine().GamePlayers.Count > 1)
+        if (GameState.IsMultiplayer())
         {
             Owner.GameSpeed = 1.0f;
             Owner.WorldInfo.TimeDilation = 1.0f;
