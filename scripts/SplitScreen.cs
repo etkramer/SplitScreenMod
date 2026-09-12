@@ -39,7 +39,8 @@ public class SplitScreen : Script
 
                 // Spawn P2
                 var gameViewport = Game.GetGameViewportClient();
-                gameViewport.CreatePlayer(engine.GamePlayers.Count, out _, true);
+                var error = new FString();
+                gameViewport.CreatePlayer(engine.GamePlayers.Count, ref error, true);
             }
             else if (key == Keys.O)
             {
@@ -241,7 +242,8 @@ public class SplitScreen : Script
             return false;
         }
 
-        if (self.IsSplitscreenPlayer(out var splitIndex))
+        var splitIndex = 0;
+        if (self.IsSplitscreenPlayer(ref splitIndex))
         {
             return splitIndex == 0;
         }
