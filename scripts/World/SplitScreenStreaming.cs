@@ -3,6 +3,7 @@ using System.Runtime.InteropServices;
 using BmSDK;
 using BmSDK.BmGame;
 using BmSDK.Engine;
+using Etkramer.SplitScreen.Native;
 
 namespace Etkramer.SplitScreen.World;
 
@@ -10,8 +11,14 @@ namespace Etkramer.SplitScreen.World;
 [Script]
 public sealed class SplitScreenStreaming : Script
 {
-    public const IntPtr RefreshLateAndFarLevelsOffset = 0x85A510;
-    public const IntPtr OctreeCapacityCallSiteOffset = 0x4B2C2A;
+    public static readonly IntPtr RefreshLateAndFarLevelsOffset = GameBuild.Offset(
+        epic: 0x85A510,
+        steam: 0x867FD0
+    );
+    public static readonly IntPtr OctreeCapacityCallSiteOffset = GameBuild.Offset(
+        epic: 0x4B2C2A,
+        steam: 0x4B1C2A
+    );
 
     [UnmanagedFunctionPointer(CallingConvention.ThisCall)]
     public delegate void RefreshLateAndFarLevelsDelegate(IntPtr self);

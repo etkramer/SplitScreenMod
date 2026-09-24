@@ -1,3 +1,4 @@
+using System.Numerics;
 using BmSDK;
 using BmSDK.BmGame;
 using BmSDK.Engine;
@@ -31,7 +32,8 @@ public sealed class SplitScreenHUD : Script
         }
 
         var gameViewport = Game.GetGameViewportClient();
-        gameViewport.GetViewportSize(out var viewportSize);
+        var viewportSize = new Vector2();
+        gameViewport.GetViewportSize(out viewportSize);
 
         foreach (var player in engine.GamePlayers)
         {
@@ -99,7 +101,8 @@ public sealed class SplitScreenHUD : Script
 
         self.RPC = rpc;
 
-        if (rpc.IsSplitscreenPlayer(out var splitIndex))
+        var splitIndex = 0;
+        if (rpc.IsSplitscreenPlayer(out splitIndex))
         {
             self.iSplitscreenIndex = splitIndex;
             self.SetViewportSplitscreenIndex(0);

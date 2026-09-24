@@ -37,17 +37,31 @@ public class SplitScreen : Script
             {
                 var engine = Game.GetEngine();
 
-                // Spawn P2
                 var gameViewport = Game.GetGameViewportClient();
-                gameViewport.CreatePlayer(engine.GamePlayers.Count, out _, true);
+                var error = new FString();
+                var newPlayer = gameViewport.CreatePlayer(
+                    engine.GamePlayers.Count,
+                    out error,
+                    true
+                );
+
+                Debug.Log(
+                    $"CreatePlayer: newPlayer={(newPlayer == null ? "null" : "ok")}, error='{error}', playerCount={engine.GamePlayers.Count}"
+                );
             }
             else if (key == Keys.O)
             {
                 var engine = Game.GetEngine();
 
-                // Remove P2
+                if (engine.GamePlayers.Count < 2)
+                {
+                    Debug.LogWarning("No players currently active to remove");
+                    return;
+                }
+
+                // Remove the most recently added player, never P1
                 var gameViewport = Game.GetGameViewportClient();
-                gameViewport.RemovePlayer(engine.GamePlayers.LastOrDefault());
+                gameViewport.RemovePlayer(engine.GamePlayers[engine.GamePlayers.Count - 1]);
             }
         }
         else
@@ -67,10 +81,16 @@ public class SplitScreen : Script
             }
             else if (key == Keys.Y)
             {
+                var engine = Game.GetEngine();
+                if (engine.GamePlayers.Count < 2)
+                {
+                    Debug.LogWarning("No other players to teleport");
+                    return;
+                }
+
                 var player2 = Game.GetPlayerPawn(1);
 
                 // Teleport players to P2
-                var engine = Game.GetEngine();
                 foreach (var player in engine.GamePlayers)
                 {
                     var pawn = player.Actor.Pawn;
@@ -241,7 +261,8 @@ public class SplitScreen : Script
             return false;
         }
 
-        if (self.IsSplitscreenPlayer(out var splitIndex))
+        var splitIndex = 0;
+        if (self.IsSplitscreenPlayer(out splitIndex))
         {
             return splitIndex == 0;
         }

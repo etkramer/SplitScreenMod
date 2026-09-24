@@ -1,4 +1,5 @@
 using System.Runtime.InteropServices;
+using Etkramer.SplitScreen.Native;
 
 namespace Etkramer.SplitScreen.Rendering;
 
@@ -6,7 +7,10 @@ namespace Etkramer.SplitScreen.Rendering;
 [Script]
 public sealed class SplitScreenRendering : Script
 {
-    public const IntPtr ProcessPrimitiveCullingOffset = 0x5A9330;
+    public static readonly IntPtr ProcessPrimitiveCullingOffset = GameBuild.Offset(
+        epic: 0x5A9330,
+        steam: 0x5A7730
+    );
 
     private const int ViewsDataOffset = 80;
     private const int ViewsArrayNumOffset = 84;

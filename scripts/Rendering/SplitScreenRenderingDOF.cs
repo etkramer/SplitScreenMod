@@ -1,5 +1,6 @@
 using System.Runtime.InteropServices;
 using BmSDK.BmGame;
+using Etkramer.SplitScreen.Native;
 using Process = System.Diagnostics.Process;
 
 namespace Etkramer.SplitScreen.Rendering;
@@ -8,10 +9,11 @@ namespace Etkramer.SplitScreen.Rendering;
 [Script]
 public sealed class SplitScreenRenderingDOF : Script
 {
-    // RockOn bloom uses a shared half-size buffer. Force blur passes to
-    // sample/write from (0, 0) so one view doesn't bleed into another.
-    public const IntPtr RockGaussianBlurOffset = 0x5A1DE0;
-    public const IntPtr RockDOFBlurOffset = 0x5A2DE0;
+    public static readonly IntPtr RockGaussianBlurOffset = GameBuild.Offset(
+        epic: 0x5A1DE0,
+        steam: 0x59FFA0
+    );
+    public static readonly IntPtr RockDOFBlurOffset = GameBuild.Offset(epic: 0x5A2DE0, steam: 0x5A0FA0);
     private const int RockOnBloomClearBranchOffset = 0x110BF1;
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
@@ -61,6 +63,11 @@ public sealed class SplitScreenRenderingDOF : Script
 
     public override void Main()
     {
+        // RockOnBloomClearBranchOffset is still Epic-only and
+        // unconfirmed for Steam; PatchInstruction's own byte-check guard
+        // means it safely no-ops there instead of corrupting the wrong
+        // bytes, so it's left unguarded here rather than build-gated.
+		// With these being said, the game plays in a stable condition than it was
         PatchRockOnBloomClear();
 
         _gaussianBlurOriginal = DetourUtil.NewDetour<RockGaussianBlurDelegate>(
