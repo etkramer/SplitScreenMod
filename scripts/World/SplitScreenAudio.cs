@@ -44,12 +44,17 @@ public sealed class SplitScreenAudio : Script
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     private delegate int SetListenerPositionDelegate(ref AkListenerPosition position, uint index);
 
-    // The game's own range check (Steam build), run before it creates a sound source:
-    // is this position within this radius of one of its listeners? It only knows its own
-    // listener, so sounds near the other players were never created at all.
-    private const int IsInListenerRangeSteamOffset = 0x7BB410;
-    private static readonly byte[] IsInListenerRangePrologue =
-        [0xF3, 0x0F, 0x10, 0x5C, 0x24, 0x08, 0x53, 0x8B, 0x5C, 0x24, 0x18];
+    // The game's own range check, run before it creates a sound source: is this position
+    // within this radius of one of its listeners? It only knows its own listener, so
+    // sounds near the other players were never created at all. Found by its code (the
+    // start of the function, through its loop over the game's 3 listener records),
+    // since its address differs between builds.
+    private static readonly byte[] IsInListenerRangeCode =
+    [
+        0xF3, 0x0F, 0x10, 0x5C, 0x24, 0x08, 0x53, 0x8B, 0x5C, 0x24, 0x18, 0x55, 0x8B, 0x6C, 0x24, 0x14,
+        0x56, 0x8B, 0x74, 0x24, 0x10, 0x57, 0x8B, 0x7C, 0x24, 0x20, 0x33, 0xD2, 0xB8, 0x01, 0x00, 0x00,
+        0x00, 0xF3, 0x0F, 0x59, 0xDB, 0x81, 0xC1, 0x5C, 0x02, 0x00, 0x00, 0xEB, 0x03, 0x8D, 0x49, 0x00,
+    ];
 
     [UnmanagedFunctionPointer(CallingConvention.ThisCall)]
     private delegate int IsInListenerRangeDelegate(
@@ -112,27 +117,62 @@ public sealed class SplitScreenAudio : Script
 
     private static unsafe void HookRangeCheck(IntPtr module)
     {
-        if (!Etkramer.SplitScreen.Native.GameBuild.IsSteam)
+        var offset = FindCode(module, IsInListenerRangeCode);
+        if (offset < 0)
         {
-            Debug.LogWarning("SplitScreenAudio: range check hook is Steam-only, skipping");
+            Debug.LogWarning("SplitScreenAudio: range check not found, sounds far from the last player may stay silent");
             return;
-        }
-
-        var code = (byte*)module + IsInListenerRangeSteamOffset;
-        for (var i = 0; i < IsInListenerRangePrologue.Length; i++)
-        {
-            if (code[i] != IsInListenerRangePrologue[i])
-            {
-                Debug.LogWarning("SplitScreenAudio: range check bytes don't match, skipping");
-                return;
-            }
         }
 
         s_isInListenerRangeDetour = IsInListenerRangeDetour;
         s_isInListenerRangeBase = DetourUtil.NewDetour<IsInListenerRangeDelegate>(
-            (IntPtr)IsInListenerRangeSteamOffset,
+            (IntPtr)offset,
             s_isInListenerRangeDetour
         );
+        Debug.Log($"SplitScreenAudio: range check found at +0x{offset:X}");
+    }
+
+    // Offset of the only place this code appears in the game's executable sections, or -1
+    private static unsafe int FindCode(IntPtr module, byte[] code)
+    {
+        var image = (byte*)module;
+        var peHeader = image + *(int*)(image + 0x3C);
+        var sectionCount = *(ushort*)(peHeader + 6);
+        var optionalHeaderSize = *(ushort*)(peHeader + 20);
+        var section = peHeader + 24 + optionalHeaderSize;
+
+        var found = -1;
+        for (var s = 0; s < sectionCount; s++, section += 40)
+        {
+            const uint Executable = 0x20000000;
+            if ((*(uint*)(section + 36) & Executable) == 0)
+            {
+                continue;
+            }
+
+            var start = *(int*)(section + 12);
+            var size = *(int*)(section + 8);
+            var span = new ReadOnlySpan<byte>(image + start, size);
+            var at = 0;
+            while (true)
+            {
+                var index = span[at..].IndexOf(new ReadOnlySpan<byte>(code));
+                if (index < 0)
+                {
+                    break;
+                }
+
+                if (found >= 0)
+                {
+                    return -1;
+                }
+
+                found = start + at + index;
+                at += index + 1;
+            }
+        }
+
+        return found;
     }
 
     private static unsafe int IsInListenerRangeDetour(
