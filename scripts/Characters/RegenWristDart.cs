@@ -5,6 +5,7 @@ using BmSDK.BmScript;
 
 namespace Etkramer.SplitScreen.Characters;
 
+// Co-op only: in solo Nightwing's wrist darts work as in the normal game
 [ScriptComponent(AutoAttach = true)]
 sealed class RestockWristDartComponent : ScriptComponent<RNightwingWristDart>
 {
@@ -19,6 +20,12 @@ sealed class RestockWristDartComponent : ScriptComponent<RNightwingWristDart>
     [ComponentRedirect(nameof(RNightwingWristDart.FireDart))]
     void FireDart(Rotator rotation, Vector3 position)
     {
+        if (!GameState.IsMultiplayer())
+        {
+            Owner.FireDart(rotation, position);
+            return;
+        }
+
         if (Owner.Ammo > 0)
         {
             Owner.FireDart(rotation, position);
@@ -33,6 +40,12 @@ sealed class RestockWristDartComponent : ScriptComponent<RNightwingWristDart>
     [ComponentRedirect(nameof(RNightwingWristDart.QuickFireDart))]
     void QuickFireDart()
     {
+        if (!GameState.IsMultiplayer())
+        {
+            Owner.QuickFireDart();
+            return;
+        }
+
         if (Owner.QuickFireTarget is not null)
         {
             Owner.QuickFireDart();
@@ -97,6 +110,12 @@ sealed class RestockWristDartComponent : ScriptComponent<RNightwingWristDart>
     [ComponentRedirect(nameof(RNightwingWristDart.OnRoomChange))]
     void OnRoomChange()
     {
+        if (!GameState.IsMultiplayer())
+        {
+            Owner.OnRoomChange();
+            return;
+        }
+
         if (!Game.GetGameRI().IsOverworldGameplay())
         {
             Owner.RestockAmmo();
@@ -110,6 +129,12 @@ sealed class RestockWristDartComponent : ScriptComponent<RNightwingWristDart>
     [ComponentRedirect(nameof(RNightwingWristDart.RestockAmmo))]
     void RestockAmmo()
     {
+        if (!GameState.IsMultiplayer())
+        {
+            Owner.RestockAmmo();
+            return;
+        }
+
         Owner.Ammo = Owner.MaxAmmo;
         Owner.NumHeadShotsInRound = 0;
         Owner.UpdateGadgetHUDParams();
@@ -123,6 +148,12 @@ sealed class RestockWristDartComponent : ScriptComponent<RNightwingWristDart>
     [ComponentRedirect(nameof(RNightwingWristDart.OnLevelChange))]
     void OnLevelChange()
     {
+        if (!GameState.IsMultiplayer())
+        {
+            Owner.OnLevelChange();
+            return;
+        }
+
         if (Game.GetGameRI().IsOverworldGameplay())
         {
             if (Owner.Ammo < Owner.MaxAmmo)

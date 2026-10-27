@@ -4,7 +4,7 @@ using BmSDK.GFxUI;
 
 namespace Etkramer.SplitScreen.Rendering;
 
-// Fixes a bug where investigation sequences don't trigger in split-screen
+// Fixes a bug where investigation sequences don't trigger in split-screen. Solo is untouched.
 [Script]
 public sealed class SplitScreenInvestigation : Script
 {
@@ -13,6 +13,11 @@ public sealed class SplitScreenInvestigation : Script
     private static void PostInitCharacterRedirect(RBMPawnAI self)
     {
         self.PostInitCharacter();
+        if (!GameState.IsMultiplayer())
+        {
+            return;
+        }
+
         self.bUseXRaySprite = false;
         self.bDisableXRaySprite = true;
         self.bAllowMeshHidingFromXrayAlpha = false;
@@ -21,6 +26,12 @@ public sealed class SplitScreenInvestigation : Script
     [Redirect(typeof(RPlayerController), nameof(RPlayerController.StartInvestigateMovie))]
     private static void StartInvestigateMovieRedirect(RPlayerController self)
     {
+        if (!GameState.IsMultiplayer())
+        {
+            self.StartInvestigateMovie();
+            return;
+        }
+
         if (self.HudMovieNew == null)
         {
             self.CreateBaseHud();

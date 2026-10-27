@@ -70,15 +70,19 @@ public sealed class SplitScreenHUD : Script
 
     // Force the cryptographic sequencer to render as a flat overlay instead of
     // onto the in-world hologram texture — sidesteps splitscreen stage-size
-    // issues that broke the password cracker for P2.
+    // issues that broke the password cracker for P2. Solo keeps the hologram.
     [Redirect(typeof(RGFxMovieResonatorMinigame), nameof(RGFxMovieResonatorMinigame.Init))]
     private static void RGFxMovieResonatorMinigame_InitRedirect(
         RGFxMovieResonatorMinigame self,
         LocalPlayer locPlay
     )
     {
-        self.bWorldRendered = false;
-        self.RenderTexture = null!;
+        if (GameState.IsMultiplayer())
+        {
+            self.bWorldRendered = false;
+            self.RenderTexture = null!;
+        }
+
         self.Init(locPlay);
     }
 

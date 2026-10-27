@@ -279,10 +279,21 @@ public class SplitScreen : Script
         // Call base for P1
         self.SetPlayerLocation(PC, Pos, Rot, TellPlayerHesMoved, bForSavingOnly);
 
+        // Only saving the spot (e.g. sliding under a gap): nobody moves. Solo: the game already did it
+        if (bForSavingOnly || !GameState.IsMultiplayer())
+        {
+            return;
+        }
+
         // Manually move all other players
         var engine = Game.GetEngine();
         for (var i = 0; i < engine.GamePlayers.Count; i++)
         {
+            if (ReferenceEquals(engine.GamePlayers[i]?.Actor, PC))
+            {
+                continue;
+            }
+
             var pawn = Game.GetPlayerPawn(i);
             pawn.SetLocationIgnoringCollision(Pos);
             pawn.SetRotation(Rot);
