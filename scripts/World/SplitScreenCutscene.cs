@@ -8,7 +8,9 @@ namespace Etkramer.SplitScreen.World;
 // Cutscenes lock every player's controls, but the game only unlocks the player it
 // thinks of as "the" player (P1) afterwards, so P2 can be left frozen. Once P1 is
 // free again, release any other player still locked, and bring them over if the
-// cutscene moved P1 far away. Solo is untouched.
+// cutscene moved P1 far away. Only players the cutscene also locked are brought over:
+// the slow-motion finish of a fight only locks P1, and P2 can be across the city.
+// Solo is untouched.
 [Script]
 public class SplitScreenCutscene : Script
 {
@@ -25,6 +27,7 @@ public class SplitScreenCutscene : Script
     static long s_p1FreeSince;
     static bool s_checkedDistance;
     static readonly long[] s_lockedSince = new long[4];
+    static readonly bool[] s_lockedInCutscene = new bool[4];
 
     public override void OnTick()
     {
@@ -43,6 +46,13 @@ public class SplitScreenCutscene : Script
             s_p1FreeSince = now;
             s_checkedDistance = false;
             Array.Clear(s_lockedSince);
+            for (var i = 1; i < players.Count && i < s_lockedInCutscene.Length; i++)
+            {
+                if (players[i]?.Actor is RPlayerController other && (IsLocked(other) || other.IsMatineePlaing()))
+                {
+                    s_lockedInCutscene[i] = true;
+                }
+            }
             return;
         }
 
@@ -70,11 +80,13 @@ public class SplitScreenCutscene : Script
         {
             s_checkedDistance = true;
             BringToP1(p1);
+            Array.Clear(s_lockedInCutscene);
         }
 
         if (now - s_p1FreeSince > 3000)
         {
             s_afterCutscene = false;
+            Array.Clear(s_lockedInCutscene);
         }
     }
 
@@ -122,6 +134,11 @@ public class SplitScreenCutscene : Script
         {
             var pawn = players[i]?.Actor?.Pawn != null ? Game.GetPlayerPawn(i) : null;
             if (pawn == null || Vector3.Distance(pawn.Location, p1Pawn.Location) <= MaxDistance)
+            {
+                continue;
+            }
+
+            if (i < s_lockedInCutscene.Length && !s_lockedInCutscene[i])
             {
                 continue;
             }

@@ -39,18 +39,65 @@ public class SplitScreenDeathGuard : Script
         }
 
         // The game only runs the game over for P1, so an extra player's death left the
-        // screen black for good. P1 goes down with them instead, which is a normal game
-        // over and checkpoint reload.
-        if (index > 0 && Game.GetEngine().GamePlayers[0]?.Actor?.Pawn is RPawnPlayer p1Pawn && p1Pawn.Health > 0)
+        // screen black for good. The extra player dies for real (so it's clear who went
+        // down), and P1's controller goes into its dead state without P1's pawn dying,
+        // which runs the normal fade, game over and checkpoint reload.
+        if (
+            index > 0
+            && Game.GetEngine().GamePlayers[0]?.Actor is RPlayerController p1
+            && p1.Pawn is RPawnPlayer p1Pawn
+            && p1Pawn.Health > 0
+        )
         {
+            if (!self.Died(killer, damageType, hitLocation))
+            {
+                return false;
+            }
+
             Debug.Log($"SplitScreenDeathGuard: P{index + 1} is down, game over through P1");
-            self.Health = Math.Max(1, self.Health);
-            p1Pawn.Health = 0;
-            p1Pawn.Died(killer, damageType, p1Pawn.Location);
-            return false;
+            s_gameOverPawn = p1Pawn;
+            s_gameOverController = p1;
+            s_gameOverKiller = killer;
+            s_gameOverDamageType = damageType;
+            s_gameOverDeadline = Environment.TickCount64 + GameOverTimeoutMs;
+            p1.PawnDied(p1Pawn);
+            return true;
         }
 
         return self.Died(killer, damageType, hitLocation);
+    }
+
+    // If P1's dead state doesn't start a game over in time, P1's pawn dies instead (the
+    // old way), so an extra player's death can never leave everyone stuck
+    private const long GameOverTimeoutMs = 10_000;
+    private static RPawnPlayer? s_gameOverPawn;
+    private static RPlayerController? s_gameOverController;
+    private static Controller? s_gameOverKiller;
+    private static Class? s_gameOverDamageType;
+    private static long s_gameOverDeadline;
+
+    public override void OnTick()
+    {
+        base.OnTick();
+
+        if (s_gameOverPawn == null || Environment.TickCount64 < s_gameOverDeadline)
+        {
+            return;
+        }
+
+        var pawn = s_gameOverPawn;
+        s_gameOverPawn = null;
+        var p1 = s_gameOverController;
+        if (!pawn.bDeleteMe && pawn.Health > 0 && p1 != null)
+        {
+            Debug.Log("SplitScreenDeathGuard: no game over through P1's controller, P1 goes down instead");
+            if (pawn.Controller == null)
+            {
+                p1.Possess(pawn, false);
+            }
+            pawn.Health = 0;
+            pawn.Died(s_gameOverKiller!, s_gameOverDamageType!, pawn.Location);
+        }
     }
 
     // A player pawn moved into another (scene teleports, matinees) kills the one in the way
@@ -110,6 +157,7 @@ public class SplitScreenDeathGuard : Script
     {
         if (GameState.IsMultiplayer())
         {
+            s_gameOverPawn = null;
             Debug.Log(
                 $"SplitScreenDeathGuard: game over triggered on P{ControllerIndex(self) + 1} (state {self.GetStateName()}, "
                     + $"pawn={self.Pawn?.Name.ToString() ?? "none"}); {DescribeAll()}"
