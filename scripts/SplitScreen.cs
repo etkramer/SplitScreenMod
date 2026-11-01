@@ -70,7 +70,7 @@ public class SplitScreen : Script
         {
             if (key == Keys.T)
             {
-                var player1 = Game.GetPlayerPawn(0);
+                var player1 = GameState.GetPlayerPawn(0);
 
                 // Teleport players to P1
                 var engine = Game.GetEngine();
@@ -90,7 +90,7 @@ public class SplitScreen : Script
                     return;
                 }
 
-                var player2 = Game.GetPlayerPawn(1);
+                var player2 = GameState.GetPlayerPawn(1);
 
                 // Teleport players to P2
                 foreach (var player in engine.GamePlayers)
@@ -258,7 +258,7 @@ public class SplitScreen : Script
         var engine = Game.GetEngine();
         for (var i = 1; i < engine.GamePlayers.Count; i++)
         {
-            var pawn = Game.GetPlayerPawn(i);
+            var pawn = GameState.GetPlayerPawn(i);
             pawn.SetLocationIgnoringCollision(self.Location);
             pawn.SetRotation(self.Rotation);
             pawn.Velocity = default;
@@ -294,7 +294,7 @@ public class SplitScreen : Script
                 continue;
             }
 
-            var pawn = Game.GetPlayerPawn(i);
+            var pawn = GameState.GetPlayerPawn(i);
             pawn.SetLocationIgnoringCollision(Pos);
             pawn.SetRotation(Rot);
             pawn.Velocity = default;
