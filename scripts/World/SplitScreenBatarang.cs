@@ -29,11 +29,6 @@ public sealed class SplitScreenBatarangComponent : ScriptComponent<RBatarangProj
     Vector3 _prev;
     bool _hasPrev;
 
-    // Measures real movement so the log shows whether the slowdown took
-    readonly System.Diagnostics.Stopwatch _clock = new();
-    Vector3 _measureStart;
-    bool _measured;
-
     // Restart the control timer with the time it would have had at the slowed speed
     void StretchControlTimer()
     {
@@ -72,18 +67,11 @@ public sealed class SplitScreenBatarangComponent : ScriptComponent<RBatarangProj
             _scale = requested;
             _prev = loc;
             _hasPrev = true;
-            _measureStart = loc;
-            _clock.Restart();
-            Debug.Log($"SplitScreenBatarang: slowing remote batarang to x{_scale:0.###}");
             return;
         }
 
         if (RemoveSlowMoComponent.RequestedSpeed >= 0.99f)
         {
-            Debug.Log(
-                $"SplitScreenBatarang: flight over after {_clock.Elapsed.TotalSeconds:0.0}s, "
-                    + $"{Vector3.Distance(loc, _measureStart):0} from the start"
-            );
             _scale = 1f;
             _hasPrev = false;
             return;
@@ -104,12 +92,5 @@ public sealed class SplitScreenBatarangComponent : ScriptComponent<RBatarangProj
 
         _prev = loc;
         _hasPrev = true;
-
-        if (!_measured && _clock.Elapsed.TotalSeconds >= 1.0)
-        {
-            _measured = true;
-            var moved = Vector3.Distance(loc, _measureStart) / (float)_clock.Elapsed.TotalSeconds;
-            Debug.Log($"SplitScreenBatarang: actually moved {moved:0}/s over the first second");
-        }
     }
 }
