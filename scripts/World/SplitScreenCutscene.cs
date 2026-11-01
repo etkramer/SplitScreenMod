@@ -132,7 +132,7 @@ public class SplitScreenCutscene : Script
 
         for (var i = 1; i < players.Count; i++)
         {
-            var pawn = players[i]?.Actor?.Pawn != null ? Game.GetPlayerPawn(i) : null;
+            var pawn = players[i]?.Actor?.Pawn != null ? GameState.GetPlayerPawn(i) : null;
             if (pawn == null || Vector3.Distance(pawn.Location, p1Pawn.Location) <= MaxDistance)
             {
                 continue;

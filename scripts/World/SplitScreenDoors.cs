@@ -6,7 +6,11 @@ namespace Etkramer.SplitScreen.World;
 
 // Door interactions assume there is only one player. Without these redirects,
 // when P2 uses a door the engine plays the open-door animation on P1 (because
-// the door's internals call WorldInfo.Game.GetPC() which always returns P1).
+// the door's internals call WorldInfo.Game.GetPC() which always returns P1). The door
+// also picks which way to send the player from P1's side of it, so with P1 already
+// through, P2 was sent back into the room they were in. RLevelTransitionDoor (e.g.
+// building entrances) takes every player through together based on P1, so an extra
+// player opening one just makes P1 open it.
 [Script]
 public class SplitScreenDoors : Script
 {
@@ -22,13 +26,34 @@ public class SplitScreenDoors : Script
     )]
     private static void InteractRedirect(RLevelTransitionDoorBase self, RPlayerController PC)
     {
+        var engine = Game.GetEngine();
+        if (self is BmSDK.BmScript.RLevelTransitionDoor && engine.GamePlayers[0]?.Actor is RPlayerController { Pawn: not null } p1)
+        {
+            PC = p1;
+        }
+
         InteractingByDoor[self] = PC;
+
+        var pcIndex = FindPlayerIndex(engine, PC);
+        var saved = engine.GamePlayers[0];
+        if (pcIndex > 0)
+        {
+            engine.GamePlayers[0] = engine.GamePlayers[pcIndex];
+            engine.GamePlayers[pcIndex] = saved;
+        }
+
         try
         {
             self.Interact(PC);
         }
         finally
         {
+            if (pcIndex > 0)
+            {
+                engine.GamePlayers[pcIndex] = engine.GamePlayers[0];
+                engine.GamePlayers[0] = saved;
+            }
+
             InteractingByDoor.Remove(self);
         }
     }
